@@ -187,33 +187,49 @@ jobs:
               aws ec2 describe-instances \
                   --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
                   --query 'Reservations[*].Instances[*].PublicIpAddress' \
-                  --output text >> ~/inventory.txt
-              cat ~/inventory.txt
+                  --output text >> .circleci/ansible/inventory.txt
+              #cat .circleci/ansible/inventory.txt
       - persist_to_workspace:
           root: ~/
           paths:
-            - inventory.txt
+            - project/.circleci/ansible/inventory.txt
       # Here's where you will add some code to rollback on failure
       #- destroy-environment
 
-  # configure-infrastructure:
-  #   docker:
-  #     # Docker image here that supports Ansible
-  #   steps:
-  #     # Checkout code from git
-  #     # Add ssh keys with fingerprint
-  #     # attach workspace
-  #     - run:
-  #         name: Install dependencies
-  #         command: |
-  #           # Your code here
-  #           exit 1
-  #     - run:
-  #         name: Configure server
-  #         command: |
-  #           # Your code here
-  #           exit 1
-      # Here's where you will add some code to rollback on failure
+  configure-infrastructure:
+    docker:
+      # Docker image here that supports Ansible
+      - image: python:3.7-alpine3.11
+    steps:
+      # Checkout code from git
+      - checkout
+      # Add ssh keys with fingerprint
+      - add_ssh_keys:
+          fingerprints:
+            - "0d:06:b9:8e:4a:21:8c:b1:7e:92:22:11:99:00:38:f3"
+      # attach workspace
+      - attach_workspace:
+          at: ~/
+      - run:
+          name: Install dependencies
+          # install the wanted packages for the project in bash commands
+          command: |
+            # Your code here
+            #for ansible
+            apk add --update ansible
+            # for tar that unpach zipped tar files
+            apk add --update tar
+            # for gzip that unzip Gzipped  files
+            apk add --update gzip
+            #pip install becuase it's a python tool
+            pip install awscli
+      - run:
+          name: Configure server
+          command: |
+            cd .circleci/ansible
+            ansible-playbook -i inventory.txt configure-server.yml
+            cat inventory.txt
+      #Here's where you will add some code to rollback on failure
 
 #   run-migrations:
 #     docker:
@@ -346,8 +362,8 @@ workflows:
           # filters:
             # branches:
               # only: [test-feature-branch]
-#       - configure-infrastructure:
-#           requires: [deploy-infrastructure]
+      - configure-infrastructure:
+          requires: [deploy-infrastructure]
 #       - run-migrations:
 #           requires: [configure-infrastructure]
 #       - deploy-frontend:
