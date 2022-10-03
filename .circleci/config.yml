@@ -192,7 +192,7 @@ jobs:
           paths:
             - inventory.txt
       # Here's where you will add some code to rollback on failure
-      - destroy-environment
+      #- destroy-environment
 
 #   configure-infrastructure:
 #     docker:
