@@ -148,9 +148,11 @@ jobs:
             cd backend
             npm install
             npm audit fix --audit-level=critical --force
-            npm audit fix --audit-level=critical --force
-            npm audit fix --audit-level=critical --force
-            npm audit --audit-level=critical
+
+            # npm audit fix --audit-level=critical --force
+            # npm audit fix --audit-level=critical --force
+            # npm audit fix --audit-level=critical --force
+            # npm audit --audit-level=critical
       - save_cache:
           paths: [backend/node_modules]
           key: scan-backend
@@ -262,26 +264,49 @@ jobs:
 
      # Here's where you will add some code to rollback on failure
 
-#   deploy-frontend:
-#     docker:
-#       # Docker image here that supports AWS CLI
-#     steps:
-#       # Checkout code from git
-#       - run:
-#           name: Install dependencies
-#           command: |
-#             # your code here
-#       - run:
-#           name: Get backend url
-#           command: |
-#             # your code here
-#             export API_URL="http://${BACKEND_IP}:3030"
-#             echo "${API_URL}"
-#       - run:
-#           name: Deploy frontend objects
-#           command: |
-#             # your code here
-#       # Here's where you will add some code to rollback on failure
+  # deploy-frontend:
+  #   docker:
+  #     # Docker image here that supports AWS CLI
+  #     - image: amazon/aws-cli
+
+  #   steps:
+  #     # Checkout code from git
+  #     - checkout
+  #     - run : yum install -y tar gzip  # packages used to unzip files
+  #     - attach_workspace:
+  #         at: ~/
+  #     - run:
+  #         name: Install dependencies
+  #         command: |
+  #           # your code here
+  #           yum install -y gcc-c++ make
+  #           curl -sL https://rpm.nodesource.com/setup_14.x | bash -
+  #           yum install -y nodejs
+  #     - run:
+  #         name: Get backend url
+  #         command: |
+  #             export BACKEND_IP=$(aws ec2 describe-instances \
+  #             --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" \
+  #             --query "Reservations[*].Instances[*].PublicIpAddress" \
+  #             --output=text)
+  #             export API_URL="http://${BACKEND_IP}:3030"
+  #             echo "API_URL=${API_URL}"
+  #             echo API_URL="http://${BACKEND_IP}:3030" >> frontend/.env
+  #             echo ENVIRONMENT=production >> "frontend/.env"
+  #             echo NODE_ENV=production >> "frontend/.env"
+  #             cat frontend/.env
+  #     - run:
+  #         name: Deploy frontend objects
+  #         command: |
+  #           # your code here
+  #           cd frontend
+  #           # install npm
+  #           npm install
+  #           # run the build
+  #           npm run build
+  #           tar -czvf artifact-"${CIRCLE_WORKFLOW_ID:0:7}".tar.gz dist
+  #           aws s3 cp dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive
+      # Here's where you will add some code to rollback on failure
 
 #   deploy-backend:
 #     docker:
