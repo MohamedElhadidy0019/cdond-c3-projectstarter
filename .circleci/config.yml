@@ -383,10 +383,10 @@ jobs:
             pip install awscli
       - attach_workspace:
           at: ~/
-      - run:
-          name: print inventory.txt from workspace
-          command: |
-            cat ~/inventory.txt
+      # - run:
+      #     name: print inventory.txt from workspace
+      #     command: |
+      #       cat ~/inventory.txt
       - run:
           name: Get backend url
           command: |
