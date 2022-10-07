@@ -3,38 +3,33 @@ version: 2.1
 # commands:
 #   destroy-environment:
 #     description: Destroy back-end and front-end cloudformation stacks given a workflow ID.
-
+#     parameters:
+#       # Add parameter here
 #     steps:
 #       - run:
 #           name: Destroy environments
 #           when: on_fail
 #           command: |
 #             # Your code here
-#             #delete all stacks and cleanup
-#             aws cloudformation delete-stack --stack-name "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}"
-#             aws cloudformation delete-stack --stack-name "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}"
+#             exit 1
 
 #   revert-migrations:
 #     description: Revert the last migration if successfully run in the current workflow.
 #     parameters:
-#       workflow_id:
-#         default: "${CIRCLE_WORKFLOW_ID:0:7}"
-#         type: string
+#       # Add parameter here
 #     steps:
 #       - run:
 #           name: Revert migrations
 #           # Add when this will run
-#           when: on_fail
 #           command: |
 #             # Curl command here to see if there was a successful migration associated with the workflow id, store result in SUCCESS variable
-#             #https://kvdb.io/8oHQythwRM2UWapjUMTaSS/migration_${CIRCLE_WORKFLOW_ID:0:7}  -d '1'
-#             SUCCESS=$(curl --insecure  https://kvdb.io/8oHQythwRM2UWapjUMTaSS/migration_${CIRCLE_WORKFLOW_ID:0:7})
-#             #SUCCESS = 1
+#             SUCCESS = 1
 #             if(( $SUCCESS==1 ));
 #             then
-#               cd ~/project/backend
-#               npm install
-#               npm run migrations:revert
+#             #  cd ~/project/backend
+#             #  npm install
+#             #  Add revert code here. You can find this in the Getting Started section.
+#               exit 1
 #             fi
 
 jobs:
@@ -153,7 +148,6 @@ jobs:
             cd backend
             npm install
             npm audit fix --audit-level=critical --force
-
             # npm audit fix --audit-level=critical --force
             # npm audit fix --audit-level=critical --force
             # npm audit fix --audit-level=critical --force
@@ -201,7 +195,7 @@ jobs:
           paths:
             - project/.circleci/ansible/inventory.txt
       # Here's where you will add some code to rollback on failure
-      # - destroy-environment
+      #- destroy-environment
 
   configure-infrastructure:
     docker:
@@ -237,7 +231,6 @@ jobs:
             ansible-playbook -i inventory.txt configure-server.yml
             cat inventory.txt
       #Here's where you will add some code to rollback on failure
-      # - destroy-environment
 
   run-migrations:
     docker:
@@ -267,10 +260,7 @@ jobs:
           command: |
             #https://kvdb.io/8oHQythwRM2UWapjUMTaSS/
             curl --insecure https://kvdb.io/8oHQythwRM2UWapjUMTaSS/migration_${CIRCLE_WORKFLOW_ID:0:7}  -d '1'
-
      # Here's where you will add some code to rollback on failure
-      # - destroy-environment
-      # - revert-migrations
 
   deploy-frontend:
     docker:
@@ -312,14 +302,11 @@ jobs:
             npm install
             npm install webpack -g
             npm install -D webpack-cli
-
             # run the build
             npm run build
             tar -czvf artifact-"${CIRCLE_WORKFLOW_ID:0:7}".tar.gz dist
             aws s3 cp dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive
       #Here's where you will add some code to rollback on failure
-      # - destroy-environment
-      # - revert-migrations
 
   deploy-backend:
     docker:
@@ -362,8 +349,6 @@ jobs:
             ansible-playbook -i inventory.txt deploy-backend.yml
             echo hopefully_worked
       # Here's where you will add some code to rollback on failure
-      # - destroy-environment
-      # - revert-migrations
 
   smoke-test:
     docker:
@@ -393,7 +378,6 @@ jobs:
             # your code here
             export BACKEND_IP=$(aws ec2 describe-instances --filters "Name=tag:Name,Values=backend-${CIRCLE_WORKFLOW_ID:0:7}" --query 'Reservations[*].Instances[*].PublicIpAddress' --output text)
             echo "BACKEND_IP: ${BACKEND_IP}"
-
       - run:
           name: Backend smoke test.
           command: |
@@ -407,7 +391,6 @@ jobs:
             else
                 return 1
             fi
-
       - run:
           name: Frontend smoke test.
           command: |
@@ -422,8 +405,6 @@ jobs:
               return 1
             fi
       # Here's where you will add some code to rollback on failure
-      # - destroy-environment
-      # - revert-migrations
 
 #   cloudfront-update:
 #     docker:
