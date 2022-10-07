@@ -3,33 +3,38 @@ version: 2.1
 # commands:
 #   destroy-environment:
 #     description: Destroy back-end and front-end cloudformation stacks given a workflow ID.
-#     parameters:
-#       # Add parameter here
+
 #     steps:
 #       - run:
 #           name: Destroy environments
 #           when: on_fail
 #           command: |
 #             # Your code here
-#             exit 1
+#             #delete all stacks and cleanup
+#             aws cloudformation delete-stack --stack-name "udapeople-frontend-${CIRCLE_WORKFLOW_ID:0:7}"
+#             aws cloudformation delete-stack --stack-name "udapeople-backend-${CIRCLE_WORKFLOW_ID:0:7}"
 
 #   revert-migrations:
 #     description: Revert the last migration if successfully run in the current workflow.
 #     parameters:
-#       # Add parameter here
+#       workflow_id:
+#         default: "${CIRCLE_WORKFLOW_ID:0:7}"
+#         type: string
 #     steps:
 #       - run:
 #           name: Revert migrations
 #           # Add when this will run
+#           when: on_fail
 #           command: |
 #             # Curl command here to see if there was a successful migration associated with the workflow id, store result in SUCCESS variable
-#             SUCCESS = 1
+#             #https://kvdb.io/8oHQythwRM2UWapjUMTaSS/migration_${CIRCLE_WORKFLOW_ID:0:7}  -d '1'
+#             SUCCESS=$(curl --insecure  https://kvdb.io/8oHQythwRM2UWapjUMTaSS/migration_${CIRCLE_WORKFLOW_ID:0:7})
+#             #SUCCESS = 1
 #             if(( $SUCCESS==1 ));
 #             then
-#             #  cd ~/project/backend
-#             #  npm install
-#             #  Add revert code here. You can find this in the Getting Started section.
-#               exit 1
+#               cd ~/project/backend
+#               npm install
+#               npm run migrations:revert
 #             fi
 
 jobs:
@@ -196,7 +201,7 @@ jobs:
           paths:
             - project/.circleci/ansible/inventory.txt
       # Here's where you will add some code to rollback on failure
-      #- destroy-environment
+      # - destroy-environment
 
   configure-infrastructure:
     docker:
@@ -232,6 +237,7 @@ jobs:
             ansible-playbook -i inventory.txt configure-server.yml
             cat inventory.txt
       #Here's where you will add some code to rollback on failure
+      # - destroy-environment
 
   run-migrations:
     docker:
@@ -263,6 +269,8 @@ jobs:
             curl --insecure https://kvdb.io/8oHQythwRM2UWapjUMTaSS/migration_${CIRCLE_WORKFLOW_ID:0:7}  -d '1'
 
      # Here's where you will add some code to rollback on failure
+      # - destroy-environment
+      # - revert-migrations
 
   deploy-frontend:
     docker:
@@ -310,6 +318,8 @@ jobs:
             tar -czvf artifact-"${CIRCLE_WORKFLOW_ID:0:7}".tar.gz dist
             aws s3 cp dist s3://udapeople-${CIRCLE_WORKFLOW_ID:0:7} --recursive
       #Here's where you will add some code to rollback on failure
+      # - destroy-environment
+      # - revert-migrations
 
   deploy-backend:
     docker:
@@ -352,6 +362,8 @@ jobs:
             ansible-playbook -i inventory.txt deploy-backend.yml
             echo hopefully_worked
       # Here's where you will add some code to rollback on failure
+      # - destroy-environment
+      # - revert-migrations
 
   smoke-test:
     docker:
@@ -410,6 +422,8 @@ jobs:
               return 1
             fi
       # Here's where you will add some code to rollback on failure
+      # - destroy-environment
+      # - revert-migrations
 
 #   cloudfront-update:
 #     docker:
