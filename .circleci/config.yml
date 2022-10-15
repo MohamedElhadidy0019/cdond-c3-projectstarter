@@ -316,7 +316,7 @@ jobs:
     steps:
       # Checkout code from git
       - checkout
-      # Add ssh keys with fingerprint
+      # Add ssh keys with fingerprint a
       - add_ssh_keys:
           fingerprints:
             - "d9:df:d5:85:a1:8c:42:9e:9f:da:d7:e1:ef:0d:1d:39"
