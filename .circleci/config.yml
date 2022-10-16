@@ -417,39 +417,63 @@ jobs:
       - destroy-environment
       - revert-migrations
 
-#   cloudfront-update:
-#     docker:
-#       # Docker image here that supports AWS CLI
-#     steps:
-#       # Checkout code from git
-#       - run:
-#           name: Install dependencies
-#           command: |
-#             # your code here
-#       - run:
-#           name: Update cloudfront distribution
-#           command: |
-#             # your code here
-#       # Here's where you will add some code to rollback on failure
+  cloudfront-update:
+    docker:
+     - image: amazon/aws-cli
+    steps:
+      # Checkout code from git
+      - checkout
+      - run:
+          name: Install dependencies
+          command: |
+            yum install -y tar gzip   # the tar to unzip files
+      - run:
+          name: Update cloudfront distribution
+          command: |
+            # Change the initial stack name, as applicable to you
+            aws cloudformation deploy \
+            --template-file .circleci/files/cloudfront.yml \
+            --stack-name InitialStack \
+            --parameter-overrides WorkflowID="${CIRCLE_WORKFLOW_ID:0:7}" \
+            --tags project=udapeople
+      # Here's where you will add some code to rollback on failure
+      - destroy-environment
+      - revert-migrations
 
-# cleanup:
-#     docker:
-#       # Docker image here
-#     steps:
-#       # Checkout code from git
-#       - run:
-#           name: Get old stack workflow id
-#           command: |
-#             # your code here
-#             export OldWorkflowID="the id here"
-#             export STACKS=[] #put the list of stacks here
-#       - run:
-#           name: Remove old stacks and files
-#           command: |
-#             if [[ "${STACKS[@]}" =~ "${OldWorkflowID}" ]]
-#             then
-#               # your code here
-#             fi
+
+  cleanup:
+    docker:
+      - image: amazon/aws-cli
+    steps:
+      - checkout
+      - run:
+          name: Get old stack workflow id
+          command: |
+            # Fetch the Old workflow ID
+            export OldWorkflowID=$(aws cloudformation \
+                    list-exports --query "Exports[?Name==\`WorkflowID\`].Value" \
+                    --no-paginate --output text)
+            echo OldWorkflowID: "${OldWorkflowID}"
+            echo CIRCLE_WORKFLOW_ID "${CIRCLE_WORKFLOW_ID:0:7}"
+            echo OldWorkflowID="${OldWorkflowID}" >> $BASH_ENV
+      - run:
+          name: Remove old stacks and files
+          command: |
+            echo OldWorkflowID: "${OldWorkflowID}"
+            if [[ "${CIRCLE_WORKFLOW_ID:0:7}" != "${OldWorkflowID}" ]]
+            then
+              echo '------------------Delete Confirmed------------------'
+              BUCKET_ID="udapeople-${OldWorkflowID}"
+              echo "BUCKET_ID: $BUCKET_ID"
+              aws s3 rm "s3://${BUCKET_ID}" --recursive
+              aws s3api delete-bucket --bucket $BUCKET_ID
+              aws cloudformation delete-stack --stack-name "udapeople-backend-${OldWorkflowID}"
+              aws cloudformation delete-stack --stack-name "udapeople-frontend-${OldWorkflowID}"
+            else
+              echo '-------------------Cannot Cleanup -------------------'
+            fi
+
+
 
 
 workflows:
@@ -467,9 +491,9 @@ workflows:
           requires: [build-frontend]
       - deploy-infrastructure:
           requires: [test-frontend, test-backend, scan-frontend, scan-backend]
-          # filters:
-            # branches:
-              # only: [test-feature-branch]
+          filters:
+            branches:
+              only: [master]
       - configure-infrastructure:
           requires: [deploy-infrastructure]
       - run-migrations:
@@ -480,7 +504,7 @@ workflows:
           requires: [run-migrations]
       - smoke-test:
           requires: [deploy-backend, deploy-frontend]
-#       - cloudfront-update:
-#           requires: [smoke-test]
-#       - cleanup:
-#           requires: [cloudfront-update]
+      - cloudfront-update:
+          requires: [smoke-test]
+      - cleanup:
+          requires: [cloudfront-update]
