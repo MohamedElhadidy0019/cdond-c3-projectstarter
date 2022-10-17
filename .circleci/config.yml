@@ -209,7 +209,7 @@ jobs:
       # Add ssh keys with fingerprint
       - add_ssh_keys:
           fingerprints:
-            - "cc:93:dc:57:56:43:fc:a8:3b:2d:c9:ef:19:4e:d2:29"
+            - "58:5b:dc:ca:ed:8c:89:7d:b3:17:15:00:c5:1d:75:c7"
       # attach workspace
       - attach_workspace:
           at: ~/
@@ -326,7 +326,7 @@ jobs:
       # Add ssh keys with fingerprint a
       - add_ssh_keys:
           fingerprints:
-            - "cc:93:dc:57:56:43:fc:a8:3b:2d:c9:ef:19:4e:d2:29"
+            - "58:5b:dc:ca:ed:8c:89:7d:b3:17:15:00:c5:1d:75:c7"
       # attach workspace
       - attach_workspace:
           at: ~/
@@ -446,7 +446,7 @@ jobs:
       - image: amazon/aws-cli
     steps:
       - checkout
-      - run: 
+      - run:
           name: Get old stack workflow id
           command: |
             # Fetch the Old workflow ID
