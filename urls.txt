@@ -1,0 +1,5 @@
+[URL01] https://github.com/MohamedElhadidy0019/cdond-c3-projectstarter
+[URL02] http://udapeople-96a5304.s3-website-us-east-1.amazonaws.com/
+[URL03] dx6y2mh5fk325.cloudfront.net
+[URL04] http://ec2-34-229-13-5.compute-1.amazonaws.com:3030/api/status
+[URL05] http://ec2-18-212-192-161.compute-1.amazonaws.com:9090/graph
