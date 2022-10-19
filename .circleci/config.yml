@@ -409,7 +409,7 @@ jobs:
             if curl -s ${URL} | grep "Welcome"
             then
                 # Change this to 0 after the job fails
-              return 1
+              return 0
             else
               return 1
             fi
@@ -460,7 +460,7 @@ jobs:
           name: Remove old stacks and files
           command: |
             echo OldWorkflowID: "${OldWorkflowID}"
-            if [[ "${CIRCLE_WORKFLOW_ID:0:7}" != "${OldWorkflowID}" ]]
+            if [[ "LOL"  ]]
             then
               echo '------------------Delete Confirmed------------------'
               BUCKET_ID="udapeople-${OldWorkflowID}"
